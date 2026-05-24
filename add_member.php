@@ -16,41 +16,70 @@ foreach ($requiredFields as $field) {
     }
 }
 
-// 3. Setup optional fields 
-$applicationID = !empty($data['ApplicationID']) ? $data['ApplicationID'] : null;
-$trainorID     = !empty($data['TrainorID'])     ? $data['TrainorID']     : null;
+// 3. Detect actual columns in `members` table and insert only those present
+$res = $conn->query("SHOW COLUMNS FROM members");
+$tableCols = [];
+$colTypes = [];
+while ($r = $res->fetch_assoc()) {
+    $tableCols[] = $r['Field'];
+    $colTypes[$r['Field']] = $r['Type'];
+}
 
-// 4. Target only TrainorID to avoid schema confusion
-$sql = "INSERT INTO members 
-        (ApplicationID, TrainorID, FirstName, LastName, Age, PlanID, Phone, Status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+$allowed = ['ApplicationID','TrainorID','FirstName','LastName','Age','PlanID','Phone','Status'];
+$insertCols = [];
+$placeholders = [];
+$values = [];
+$types = '';
 
+foreach ($allowed as $col) {
+    if (in_array($col, $tableCols)) {
+        $insertCols[] = $col;
+        $placeholders[] = '?';
+
+        // choose type based on column type
+        $t = strtolower($colTypes[$col]);
+        if (strpos($t, 'int') !== false) {
+            $types .= 'i';
+        } else {
+            $types .= 's';
+        }
+
+        $values[] = isset($data[$col]) && $data[$col] !== '' ? $data[$col] : null;
+    }
+}
+
+if (empty($insertCols)) {
+    http_response_code(500);
+    echo json_encode(["error" => "No matching columns found in members table."]);
+    exit;
+}
+
+$sql = "INSERT INTO members (" . implode(', ', $insertCols) . ") VALUES (" . implode(', ', $placeholders) . ")";
 $stmt = $conn->prepare($sql);
 
-if ($stmt) {
-    $stmt->bind_param(
-        "iissiiis", 
-        $applicationID, 
-        $trainorID, 
-        $data['FirstName'], 
-        $data['LastName'], 
-        $data['Age'], 
-        $data['PlanID'], 
-        $data['Phone'], 
-        $data['Status']
-    );
-
-    if ($stmt->execute()) {
-        http_response_code(201); 
-        echo json_encode(["message" => "Inserted successfully"]);
-    } else {
-        http_response_code(500); 
-        echo json_encode(["error" => $stmt->error]);
-    }
-    
-    $stmt->close();
-} else {
+if (!$stmt) {
     http_response_code(500);
     echo json_encode(["error" => $conn->error]);
+    exit;
 }
+
+// bind params dynamically
+$bindParams = [];
+$bindParams[] = & $types;
+for ($i = 0; $i < count($values); $i++) {
+    // ensure each value is a variable (needed for bind_param references)
+    $bindParams[] = & $values[$i];
+}
+
+call_user_func_array([$stmt, 'bind_param'], $bindParams);
+
+if ($stmt->execute()) {
+    http_response_code(201);
+    echo json_encode(["message" => "Inserted successfully"]);
+} else {
+    http_response_code(500);
+    echo json_encode(["error" => $stmt->error]);
+}
+
+$stmt->close();
 ?>

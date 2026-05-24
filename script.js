@@ -24,7 +24,7 @@ function addMember() {
     })
     .then(res => res.text())
     .then(res => {
-        alert(res);
+        showServerResponse(res);
         clearForm(); // <--- Automatically clears the input text fields here
         loadMembers();
     })
@@ -73,7 +73,7 @@ function updateMember() {
     })
     .then(res => res.text())
     .then(res => {
-        alert(res);
+        showServerResponse(res);
         clearForm(); // <--- Automatically clears the input text fields here too
         loadMembers();
     })
@@ -162,6 +162,23 @@ function deleteMember(id) {
         loadMembers();
     })
     .catch(err => console.error(err));
+}
+
+function showServerResponse(res) {
+    try {
+        const data = JSON.parse(res);
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+        if (data.message) {
+            alert(data.message);
+            return;
+        }
+    } catch (e) {
+        // If parsing fails, fall back to raw response text.
+    }
+    alert(res);
 }
 
 // =====================

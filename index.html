@@ -27,7 +27,12 @@
                 <input type="number" id="Age" placeholder="Age" min="1" required>
                 <input type="text" id="PlanID" placeholder="Plan ID" required>
                 <input type="tel" id="Phone" placeholder="Phone Number" required>
-                <input type="text" id="Status" placeholder="Status (e.g. Active)" required>
+                <select id="Status" required>
+                    <option value="" disabled selected hidden>Select Membership Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Expired">Expired</option>
+                </select>
             </div>
             <div class="form-actions">
                 <button class="btn btn-success" onclick="addMember()">Add Member</button>
