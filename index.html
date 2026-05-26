@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITMATE Gym Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="logo-container">
+            <span class="logo-accent">FIT</span>MATE
+        </div>
+        <h1>Gym Member Management</h1>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <aside class="panel-card form-panel">
+            <h2>Member Profile Editor</h2>
+            <div class="form-grid">
+                <input type="number" id="MemberID" placeholder="Member ID">
+                
+                <input type="text" id="TrainorID" placeholder="Trainer ID">
+                <input type="text" id="FirstName" placeholder="First Name" required>
+                <input type="text" id="LastName" placeholder="Last Name" required>
+                <input type="number" id="Age" placeholder="Age" min="1" max="120"  oninput="if(this.value < 1) this.value='';" required>
+                <input type="text" id="PlanID" placeholder="Plan ID" required>
+                <input type="tel" id="Phone" placeholder="Phone Number (11 digits)" maxlength="11" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required>
+                <select id="Status" required>
+                    <option value="" disabled selected hidden>Select Membership Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Expired">Expired</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-success" onclick="addMember()">Add Member</button>
+                <button class="btn btn-primary" onclick="updateMember()">Update Member</button>
+            </div>
+        </aside>
+
+        <main class="panel-card table-panel">
+            
+            <div class="dashboard-tabs">
+                <button class="tab-btn active-tab" onclick="switchTab('members')">Members</button>
+                <button class="tab-btn" onclick="switchTab('trainers')">Gym Trainers</button>
+            </div>
+
+            <div id="membersViewSection" class="tab-content show-content">
+                <div class="table-header">
+                    <input type="text" id="search" placeholder="🔍 Search members by name..." onkeyup="searchMember()">
+                </div>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Age</th>
+                                <th>Phone</th>
+                                <th style="text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableData"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="trainersViewSection" class="tab-content">
+                <div class="table-header">
+                    <h2>Available Gym Trainers</h2>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Trainer ID</th>
+                                <th>Trainer Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trainerTableData"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </main>
+        
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
